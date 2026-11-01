@@ -1,0 +1,22 @@
+{% extends "Max_app/base.html" %}
+{% load humanize %}
+{% block content %}
+<h4 class="mb-3">Mis compras</h4>
+{% for v in ventas %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <span>Compra #{{ v.pk }} · {{ v.fecha|date:"d/m/Y H:i" }}</span>
+      <span><span class="badge bg-secondary">{{ v.get_estado_display }}</span> <strong>${{ v.total|intcomma }}</strong></span>
+    </div>
+    <ul class="list-group list-group-flush">
+      {% for d in v.detalles.all %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ d.cantidad }} × {{ d.producto.nombre }}</span><span>${{ d.subtotal|intcomma }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% empty %}
+  <p class="text-muted">Todavía no tienes compras.</p>
+{% endfor %}
+{% endblock %}

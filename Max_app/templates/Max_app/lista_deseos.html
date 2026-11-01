@@ -1,0 +1,34 @@
+{% extends "Max_app/base.html" %}
+{% load humanize %}
+{% block title %}Lista de deseos – MaxStore{% endblock %}
+{% block content %}
+<h4 class="mb-3">Mi lista de deseos</h4>
+<div class="row row-cols-1 row-cols-md-3 g-3">
+  {% for d in deseos %}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h6 class="mb-0">{{ d.producto.nombre }}</h6>
+        <small class="text-muted">{{ d.producto.plataforma }} · {{ d.producto.get_condicion_display }}</small>
+        <p class="fw-bold fs-5 mb-0 mt-2">${{ d.producto.precio|intcomma }}</p>
+        {% if d.producto.stock == 0 %}<small class="text-danger">Agotado</small>{% endif %}
+      </div>
+      <div class="card-footer bg-white d-flex gap-2">
+        {% if d.producto.activo and d.producto.stock > 0 %}
+          <form method="post" action="{% url 'carrito_agregar' d.producto.pk %}" class="flex-grow-1 m-0">{% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'lista_deseos' %}">
+            <button class="btn btn-sm btn-dark w-100">Agregar al carrito</button>
+          </form>
+        {% endif %}
+        <form method="post" action="{% url 'deseo_alternar' d.producto.pk %}" class="m-0">{% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'lista_deseos' %}">
+          <button class="btn btn-sm btn-outline-danger">Quitar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <p class="text-muted">Todavía no tienes juegos en tu lista. Agrégalos con el corazón del <a href="{% url 'catalogo' %}">catálogo</a>.</p>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "Max_app/base.html" %}
+{% load humanize %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-1">Dashboard</h2>
+<p class="text-muted">Datos reales desde PostgreSQL. Solo se cuentan las ventas en estado <strong>Pagada</strong>.</p>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="small text-muted">Ingresos</div><div class="fs-5 fw-bold">${{ resumen.ingresos|intcomma }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="small text-muted">Ventas pagadas</div><div class="fs-5 fw-bold">{{ resumen.ventas }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="small text-muted">Ticket promedio</div><div class="fs-5 fw-bold">${{ resumen.ticket|floatformat:0|intcomma }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="small text-muted">Clientes</div><div class="fs-5 fw-bold">{{ clientes }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="small text-muted">Unidades en stock</div><div class="fs-5 fw-bold">{{ inventario.unidades|intcomma }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="small text-muted">Valor inventario</div><div class="fs-5 fw-bold">${{ inventario.valor|intcomma }}</div></div></div></div>
+</div>
+
+<div class="card shadow-sm mb-4 {% if total_pendientes %}border-warning{% endif %}">
+  <div class="card-header">Ventas pendientes de pago (efectivo): <strong>{{ total_pendientes }}</strong></div>
+  {% if pendientes %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th class="text-end">Total</th><th></th></tr></thead>
+      <tbody>
+        {% for v in pendientes %}
+        <tr>
+          <td>{{ v.pk }}</td>
+          <td>{{ v.cliente.user.username }}</td>
+          <td>{{ v.fecha|date:"d/m/Y H:i" }}</td>
+          <td class="text-end">${{ v.total|intcomma }}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'venta_pagar' v.pk %}" class="m-0">
+              {% csrf_token %}<button class="btn btn-sm btn-success">Marcar como pagada</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="card-body text-muted">No hay ventas pendientes.</div>
+  {% endif %}
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-8"><div class="card shadow-sm"><div class="card-body">
+    <h6>Ingresos por mes</h6>
+    {% if grafico.meses %}<canvas id="gMes" height="120"></canvas>{% else %}<p class="text-muted mb-0">Aún no hay ventas pagadas.</p>{% endif %}
+  </div></div></div>
+  <div class="col-lg-4"><div class="card shadow-sm"><div class="card-body">
+    <h6>Ingresos: retro vs nuevo</h6>
+    {% if grafico.cond_labels %}<canvas id="gCond" height="200"></canvas>{% else %}<p class="text-muted mb-0">Sin datos.</p>{% endif %}
+  </div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Juegos más vendidos</div>
+    <ul class="list-group list-group-flush">
+      {% for t in top_productos %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ t.producto__nombre }} <small class="text-muted">({{ t.producto__plataforma__nombre }})</small></span>
+          <span>{{ t.unidades }} u. · ${{ t.ingresos|intcomma }}</span>
+        </li>
+      {% empty %}<li class="list-group-item text-muted">Sin ventas aún.</li>{% endfor %}
+    </ul></div></div>
+
+  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Ingresos por consola</div>
+    <ul class="list-group list-group-flush">
+      {% for pl in por_plataforma %}
+        <li class="list-group-item d-flex justify-content-between"><span>{{ pl.producto__plataforma__nombre }}</span><span>${{ pl.ingresos|intcomma }}</span></li>
+      {% empty %}<li class="list-group-item text-muted">Sin ventas aún.</li>{% endfor %}
+    </ul></div></div>
+
+  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Mejores clientes</div>
+    <ul class="list-group list-group-flush">
+      {% for c in mejores_clientes %}
+        <li class="list-group-item d-flex justify-content-between"><span>{{ c.cliente__user__username }} <small class="text-muted">({{ c.compras }} compras)</small></span><span>${{ c.total|intcomma }}</span></li>
+      {% empty %}<li class="list-group-item text-muted">Sin ventas aún.</li>{% endfor %}
+    </ul></div></div>
+
+  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Stock bajo (3 o menos)</div>
+    <ul class="list-group list-group-flush">
+      {% for p in stock_bajo %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ p.nombre }} <small class="text-muted">({{ p.plataforma }})</small></span>
+          <span class="badge {% if p.stock == 0 %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ p.stock }}</span>
+        </li>
+      {% empty %}<li class="list-group-item text-muted">Todo el stock está en niveles normales.</li>{% endfor %}
+    </ul></div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ grafico|json_script:"grafico-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  var g = JSON.parse(document.getElementById("grafico-data").textContent);
+  var m = document.getElementById("gMes");
+  if (m) new Chart(m, {type: "bar", data: {labels: g.meses, datasets: [{label: "Ingresos (CLP)", data: g.ingresos_mes, backgroundColor: "#0d6efd"}]}, options: {plugins: {legend: {display: false}}}});
+  var c = document.getElementById("gCond");
+  if (c) new Chart(c, {type: "doughnut", data: {labels: g.cond_labels, datasets: [{data: g.cond_valores, backgroundColor: ["#198754", "#ffc107", "#6c757d"]}]}});
+</script>
+{% endblock %}

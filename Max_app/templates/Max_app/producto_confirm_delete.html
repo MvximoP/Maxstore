@@ -1,0 +1,11 @@
+{% extends "Max_app/base.html" %}
+{% block content %}
+<div class="card shadow-sm mx-auto" style="max-width:560px"><div class="card-body">
+  <h4>Eliminar «{{ object.nombre }}»</h4>
+  <p class="text-muted">Si el producto ya tiene ventas, se desactivará en vez de borrarse para conservar el historial.</p>
+  <form method="post">{% csrf_token %}
+    <button class="btn btn-danger">Confirmar</button>
+    <a href="{% url 'catalogo' %}" class="btn btn-link">Cancelar</a>
+  </form>
+</div></div>
+{% endblock %}

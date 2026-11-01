@@ -1,0 +1,79 @@
+{% extends "Max_app/base.html" %}
+{% load humanize static %}
+{% block content %}
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-5"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Buscar juego o consola..."></div>
+  <div class="col-md-3">
+    <select name="condicion" class="form-select">
+      <option value="">Retro y nuevos</option>
+      <option value="N" {% if request.GET.condicion == "N" %}selected{% endif %}>Solo nuevos</option>
+      <option value="R" {% if request.GET.condicion == "R" %}selected{% endif %}>Solo retro</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="plataforma" class="form-select">
+      <option value="">Todas las consolas</option>
+      {% for pl in plataformas %}
+        <option value="{{ pl.pk }}" {% if request.GET.plataforma == pl.pk|stringformat:"s" %}selected{% endif %}>{{ pl.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-1 d-grid"><button class="btn btn-dark">Filtrar</button></div>
+</form>
+
+<div class="row row-cols-1 row-cols-md-3 row-cols-xl-4 g-3">
+  {% for p in productos %}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      {% if p.imagen %}
+        <img src="{% static 'Max_app/img/'|add:p.imagen %}" class="card-img-top" alt="{{ p.nombre }}"
+             style="height:200px;object-fit:cover" onerror="this.style.display='none'">
+      {% endif %}
+      <div class="card-body">
+        <span class="badge {% if p.condicion == 'R' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ p.get_condicion_display }}</span>
+        <h6 class="mt-2 mb-0">{{ p.nombre }}</h6>
+        <small class="text-muted">{{ p.plataforma }} · {{ p.anio_lanzamiento }}</small>
+        <p class="fw-bold fs-5 mb-0 mt-2">${{ p.precio|intcomma }}</p>
+        <small class="{% if p.stock <= 3 %}text-danger{% endif %}">Stock: {{ p.stock }}</small>
+      </div>
+      <div class="card-footer bg-white d-flex gap-2">
+        {% if p.stock == 0 %}
+          <button class="btn btn-sm btn-secondary flex-grow-1" disabled>Agotado</button>
+        {% elif user.is_authenticated %}
+          <form method="post" action="{% url 'carrito_agregar' p.pk %}" class="flex-grow-1 m-0">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="btn btn-sm btn-dark w-100">Agregar</button>
+          </form>
+        {% else %}
+          <a class="btn btn-sm btn-dark flex-grow-1" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Ingresa para comprar</a>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'deseo_alternar' p.pk %}" class="m-0">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="btn btn-sm btn-outline-danger" title="Lista de deseos"><i class="bi bi-heart"></i></button>
+          </form>
+        {% endif %}
+
+        {% if user.is_staff %}
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'producto_editar' p.pk %}">Editar</a>
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'producto_eliminar' p.pk %}">Borrar</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <p class="text-muted">No hay productos con esos filtros.</p>
+  {% endfor %}
+</div>
+
+{% if is_paginated %}
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{{ filtros }}&page={{ page_obj.previous_page_number }}">«</a></li>{% endif %}
+    <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{{ filtros }}&page={{ page_obj.next_page_number }}">»</a></li>{% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

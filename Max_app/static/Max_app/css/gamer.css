@@ -1,0 +1,191 @@
+/* ===== MaxStore · Arcade 8-bit ===== */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+:root[data-bs-theme=dark] {
+  --bg: #120d33;
+  --panel: #1f1760;
+  --panel-2: #2b2085;
+  --amarillo: #ffd23f;
+  --rosa: #ff4d8d;
+  --cian: #2de2e6;
+  --verde: #5cff6b;
+  --naranja: #ff8a1f;
+  --blanco: #fff7e0;
+  --lila: #b9b2ff;
+  --pixel: 'Press Start 2P', monospace;
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--blanco);
+  --bs-border-color: #000;
+  --bs-secondary-color: var(--lila);
+  --bs-link-color-rgb: 45, 226, 230;
+  --bs-link-hover-color-rgb: 255, 210, 63;
+}
+
+@keyframes estrellas { to { background-position: -300px 200px, -300px 200px, -300px 200px, -300px 200px, -300px 200px, 0 0; } }
+@keyframes parpadeo { 50% { opacity: 0; } }
+
+body {
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  background-color: var(--bg);
+}
+/* Fondo: estrellas que se mueven + atardecer abajo */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+    radial-gradient(2px 2px at 120px 90px, var(--amarillo), transparent),
+    radial-gradient(1px 1px at 200px 40px, #fff, transparent),
+    radial-gradient(2px 2px at 60px 160px, var(--cian), transparent),
+    radial-gradient(1px 1px at 260px 140px, #fff, transparent),
+    linear-gradient(to top, rgba(255, 77, 141, .28), transparent 35%);
+  background-size: 300px 200px, 300px 200px, 300px 200px, 300px 200px, 300px 200px, 100% 100%;
+  animation: estrellas 90s linear infinite;
+}
+/* Líneas de pantalla CRT */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, .13) 3px);
+}
+::selection { background: var(--amarillo); color: #000; }
+small, .small { font-size: 1.15rem !important; }
+
+/* Títulos con tipografía pixel */
+h1, h2, h3, h4, h5, h6, .navbar-brand, .btn, .badge, .dropdown-header, .page-link { font-family: var(--pixel); }
+main h1, main h2 { font-size: 1.3rem; line-height: 1.7; color: var(--amarillo); text-shadow: 4px 4px 0 #000; }
+main h3, main h4 { font-size: 1rem; line-height: 1.8; color: var(--amarillo); text-shadow: 3px 3px 0 #000; }
+main h3::after { content: "_"; color: var(--verde); animation: parpadeo 1s steps(1) infinite; }
+main h5 { font-size: .8rem; line-height: 1.7; color: var(--cian); text-shadow: 2px 2px 0 #000; }
+.form-label { font-size: 1.2rem; color: var(--cian); }
+
+.bg-light { background-color: transparent !important; }
+.bg-white { background-color: #0d0828 !important; }
+.text-muted { color: var(--lila) !important; }
+
+/* ===== Barra superior ===== */
+.navbar.bg-dark {
+  background: var(--panel) !important;
+  border-bottom: 4px solid #000;
+  box-shadow: 0 6px 0 var(--rosa);
+}
+.navbar-brand { font-size: .95rem; color: var(--amarillo) !important; text-shadow: 3px 3px 0 var(--rosa); }
+
+/* ===== Botones: gruesos y se hunden al presionar ===== */
+.btn {
+  font-size: .62rem; line-height: 1.6; text-transform: uppercase;
+  border: 3px solid #000; border-radius: 0; padding: .55rem .85rem;
+  box-shadow: 4px 4px 0 #000; transition: none;
+}
+.btn-sm { font-size: .55rem; padding: .45rem .65rem; }
+.btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+.btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; }
+
+.btn-dark { --bs-btn-bg: var(--cian); --bs-btn-color: #000; --bs-btn-border-color: #000;
+  --bs-btn-hover-bg: var(--verde); --bs-btn-hover-color: #000; --bs-btn-hover-border-color: #000;
+  --bs-btn-active-bg: var(--amarillo); --bs-btn-active-color: #000; --bs-btn-active-border-color: #000;
+  --bs-btn-disabled-bg: #555; --bs-btn-disabled-color: #bbb; --bs-btn-disabled-border-color: #000; }
+.btn-warning { --bs-btn-bg: var(--amarillo); --bs-btn-color: #000; --bs-btn-border-color: #000;
+  --bs-btn-hover-bg: #ffe27a; --bs-btn-hover-color: #000; --bs-btn-hover-border-color: #000;
+  --bs-btn-active-bg: var(--naranja); --bs-btn-active-color: #000; --bs-btn-active-border-color: #000; }
+.btn-outline-light { --bs-btn-bg: var(--panel-2); --bs-btn-color: var(--blanco); --bs-btn-border-color: #000;
+  --bs-btn-hover-bg: var(--rosa); --bs-btn-hover-color: #000; --bs-btn-hover-border-color: #000;
+  --bs-btn-active-bg: var(--amarillo); --bs-btn-active-color: #000; --bs-btn-active-border-color: #000; }
+.btn-outline-warning { --bs-btn-bg: #000; --bs-btn-color: var(--amarillo); --bs-btn-border-color: var(--amarillo);
+  --bs-btn-hover-bg: var(--amarillo); --bs-btn-hover-color: #000; --bs-btn-hover-border-color: var(--amarillo); }
+.btn-outline-primary { --bs-btn-bg: var(--naranja); --bs-btn-color: #000; --bs-btn-border-color: #000;
+  --bs-btn-hover-bg: #ffb05c; --bs-btn-hover-color: #000; --bs-btn-hover-border-color: #000;
+  --bs-btn-active-bg: var(--amarillo); --bs-btn-active-color: #000; }
+.btn-outline-danger { --bs-btn-bg: var(--rosa); --bs-btn-color: #000; --bs-btn-border-color: #000;
+  --bs-btn-hover-bg: #ff86b0; --bs-btn-hover-color: #000; --bs-btn-hover-border-color: #000;
+  --bs-btn-active-bg: var(--amarillo); --bs-btn-active-color: #000; }
+.btn-link { box-shadow: none; border: 0; }
+footer .btn { box-shadow: 4px 4px 0 var(--rosa); }
+
+/* ===== Tarjetas: un color por columna ===== */
+.card {
+  --acento: var(--cian);
+  background: var(--panel); border: 4px solid var(--acento); border-radius: 0;
+  box-shadow: 8px 8px 0 #000; overflow: hidden; transition: transform .12s, box-shadow .12s;
+}
+.row > .col:nth-child(5n+1) .card { --acento: var(--cian); }
+.row > .col:nth-child(5n+2) .card { --acento: var(--rosa); }
+.row > .col:nth-child(5n+3) .card { --acento: var(--amarillo); }
+.row > .col:nth-child(5n+4) .card { --acento: var(--verde); }
+.row > .col:nth-child(5n+5) .card { --acento: var(--naranja); }
+.card:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0 var(--acento); }
+.card-img-top { border-bottom: 4px solid var(--acento); filter: saturate(1.2) contrast(1.05); }
+.card .card-footer, .card .card-footer.bg-white { background-color: #0d0828 !important; border-top: 4px solid var(--acento); }
+.card h6 { font-size: .64rem; line-height: 1.7; color: var(--blanco); }
+.card .fs-5 { font-family: var(--pixel); font-size: .95rem !important; color: var(--amarillo); text-shadow: 3px 3px 0 #000; }
+.card .fs-3, .card .fs-4, .card .display-6 { font-family: var(--pixel); font-size: 1.15rem !important; color: var(--amarillo); text-shadow: 3px 3px 0 #000; }
+
+/* Etiquetas */
+.badge { font-size: .55rem; border: 2px solid #000; border-radius: 0; padding: .5em .65em; box-shadow: 2px 2px 0 #000; }
+.badge.bg-warning { background: var(--naranja) !important; color: #000 !important; }
+.badge.bg-success { background: var(--verde) !important; color: #000 !important; }
+.badge.bg-dark { background: #000 !important; color: var(--amarillo) !important; }
+
+/* ===== Formularios ===== */
+.form-control, .form-select {
+  font-family: 'VT323', monospace; font-size: 1.35rem;
+  background-color: #0d0828; color: var(--blanco);
+  border: 3px solid #000; border-radius: 0; box-shadow: inset 3px 3px 0 rgba(0, 0, 0, .55);
+}
+.form-control:focus, .form-select:focus {
+  background-color: #0d0828; color: var(--blanco);
+  border-color: var(--cian); box-shadow: 4px 4px 0 var(--cian);
+}
+.form-control::placeholder { color: #7f78c9; }
+.form-check-input { border: 3px solid #000; border-radius: 0; background-color: #0d0828; }
+.form-check-input:checked { background-color: var(--verde); border-color: #000; }
+.dropdown-menu { background: var(--panel); border: 4px solid #000; border-radius: 0; box-shadow: 6px 6px 0 var(--rosa); }
+.dropdown-item { font-size: 1.3rem; color: var(--blanco); }
+.dropdown-item:hover { background: var(--amarillo); color: #000; }
+.dropdown-header { font-size: .6rem; color: var(--cian); }
+.dropdown-divider { border-top: 3px solid #000; opacity: 1; }
+.alert { border: 4px solid #000; border-radius: 0; box-shadow: 5px 5px 0 #000; font-size: 1.3rem; }
+
+/* ===== Tablas y paginación ===== */
+.table { --bs-table-bg: transparent; border: 4px solid #000; font-size: 1.25rem; }
+.table thead th { font-family: var(--pixel); font-size: .58rem; color: var(--amarillo); background: var(--panel-2); border-bottom: 4px solid #000; }
+.table-hover tbody tr:hover > * { --bs-table-bg-state: rgba(255, 210, 63, .16); }
+.page-link { font-size: .6rem; background: var(--panel-2); color: var(--blanco); border: 3px solid #000; border-radius: 0 !important; }
+.page-link:hover { background: var(--rosa); color: #000; }
+.page-item.active .page-link { background: var(--amarillo); color: #000; border-color: #000; }
+
+/* ===== Carrusel ===== */
+.carousel {
+  border: 6px solid var(--amarillo); border-radius: 0; overflow: hidden;
+  box-shadow: 0 0 0 6px #000, 14px 14px 0 6px var(--rosa);
+}
+.carousel-item { transition: opacity .9s ease-in-out; }
+.carousel-caption {
+  left: 0; right: 0; bottom: 0; padding: 3rem 1rem 1.2rem;
+  background: linear-gradient(transparent, rgba(18, 13, 51, .95));
+}
+.carousel-caption h1, .carousel-caption h2, .carousel-caption h3, .carousel-caption h5 {
+  font-family: var(--pixel); font-size: .95rem; line-height: 1.7; color: var(--amarillo); text-shadow: 3px 3px 0 #000;
+}
+.carousel-caption p { font-size: 1.45rem; text-shadow: 2px 2px 0 #000; }
+
+/* ===== Pie de página ===== */
+footer.bg-dark { background: #0a0620 !important; border-top: 6px solid #000; box-shadow: 0 -6px 0 var(--cian); }
+footer strong { font-family: var(--pixel); font-size: .62rem; color: var(--amarillo); line-height: 2; }
+footer .small { font-size: 1.25rem !important; }
+footer a.link-light { text-decoration: none; }
+footer a.link-light:hover { color: var(--amarillo) !important; }
+footer a.link-light:hover::before { content: "▶ "; color: var(--rosa); }
+
+/* ===== Barra de desplazamiento cuadrada ===== */
+::-webkit-scrollbar { width: 14px; }
+::-webkit-scrollbar-track { background: #0a0620; }
+::-webkit-scrollbar-thumb { background: var(--amarillo); border: 3px solid #000; }
+
+@media (max-width: 576px) {
+  .navbar-brand { font-size: .8rem; }
+  main h1, main h2 { font-size: 1.05rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+}

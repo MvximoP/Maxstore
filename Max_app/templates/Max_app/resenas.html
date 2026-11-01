@@ -1,0 +1,50 @@
+{% extends "Max_app/base.html" %}
+{% block title %}Reseñas – MaxStore{% endblock %}
+{% block content %}
+<h3 class="mb-1">Reseñas de nuestros clientes</h3>
+<p class="text-muted">
+  {% if resumen.total %}
+    Promedio: <strong>{{ resumen.promedio|floatformat:1 }} ★</strong> ({{ resumen.total }} reseña{{ resumen.total|pluralize }})
+  {% else %}
+    Aún no hay reseñas.
+  {% endif %}
+</p>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm"><div class="card-body">
+      <h5>Deja tu reseña</h5>
+      {% if form %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for campo in form %}
+            <div class="mb-3">
+              <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+              {{ campo }}
+              {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+          <button class="btn btn-dark">Publicar</button>
+        </form>
+      {% else %}
+        <p class="mb-0 text-muted">Para escribir una reseña
+          <a href="{% url 'login' %}?next={% url 'resenas' %}">inicia sesión</a> o
+          <a href="{% url 'registro' %}">crea una cuenta</a>.</p>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="col-lg-7">
+    {% for r in resenas %}
+      <div class="card shadow-sm mb-3"><div class="card-body">
+        <div class="d-flex justify-content-between">
+          <strong>{{ r.user.username }}</strong>
+          <span class="text-warning">{% for i in "12345" %}{% if forloop.counter <= r.calificacion %}★{% else %}☆{% endif %}{% endfor %}</span>
+        </div>
+        <p class="mb-1">{{ r.comentario }}</p>
+        <small class="text-muted">{{ r.creado|date:"d/m/Y" }}</small>
+      </div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

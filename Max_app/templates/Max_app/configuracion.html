@@ -1,0 +1,27 @@
+{% extends "Max_app/base.html" %}
+{% block title %}Configuración – MaxStore{% endblock %}
+{% block content %}
+<div class="card shadow-sm mx-auto" style="max-width:640px">
+  <div class="card-body">
+    <h4 class="mb-3">Configuración de la cuenta</h4>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for e in form.non_field_errors %}<div class="alert alert-danger">{{ e }}</div>{% endfor %}
+      {% for campo in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {{ campo }}
+          {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+      <button class="btn btn-dark">Guardar cambios</button>
+    </form>
+
+    <hr>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-dark" href="{% url 'cambiar_clave' %}">Cambiar contraseña</a>
+      <a class="btn btn-outline-danger" href="{% url 'lista_deseos' %}">Lista de deseos ({{ total_deseos }})</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

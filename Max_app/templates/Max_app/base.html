@@ -1,0 +1,115 @@
+{% load humanize static %}
+<!doctype html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MaxStore – Juegos retro y nuevos{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎮%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'Max_app/css/gamer.css' %}" rel="stylesheet">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{% url 'inicio' %}">🎮 MaxStore</a>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <a class="btn btn-sm btn-outline-light" href="{% url 'catalogo' %}">Catálogo</a>
+      {% if user.is_authenticated %}
+        {% if user.is_staff %}
+          <a class="btn btn-sm btn-outline-light" href="{% url 'producto_crear' %}">+ Producto</a>
+          <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard' %}">Dashboard</a>
+        {% endif %}
+        <a class="btn btn-sm btn-outline-light" href="{% url 'mis_compras' %}">Mis compras</a>
+      {% endif %}
+      <a class="btn btn-sm btn-warning" href="{% url 'carrito' %}">
+        Carrito <span class="badge bg-dark">{{ request.session.carrito|length }}</span>
+      </a>
+
+      <div class="dropdown">
+        <button class="btn btn-link text-light text-decoration-none p-0 fs-3 lh-1" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false" aria-label="Cuenta">
+          <i class="bi bi-person-circle"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          {% if user.is_authenticated %}
+            <li><h6 class="dropdown-header">Hola, {{ user.username }}</h6></li>
+            <li><a class="dropdown-item" href="{% url 'configuracion' %}"><i class="bi bi-gear me-2"></i>Configuración</a></li>
+            <li><a class="dropdown-item" href="{% url 'lista_deseos' %}"><i class="bi bi-heart me-2"></i>Lista de deseos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'logout' %}" class="m-0">{% csrf_token %}
+                <button class="dropdown-item text-danger">Salir</button>
+              </form>
+            </li>
+          {% else %}
+            <li><a class="dropdown-item" href="{% url 'login' %}">Iniciar sesión</a></li>
+            <li><a class="dropdown-item" href="{% url 'registro' %}">Registrarse</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="container pb-5 flex-grow-1">
+  {% for m in messages %}
+    <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} alert-dismissible fade show">
+      {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+
+{# Cambia el teléfono y los correos por los datos reales de la tienda #}
+<footer class="bg-dark text-light mt-auto py-4">
+  <div class="container">
+    <div class="row g-4 small">
+      <div class="col-md-4">
+        <strong>MaxStore</strong><br>Videojuegos retro y nuevos<br><br>
+        Teléfono: +56 9 1234 5678<br>Correo: contacto@maxstore.cl
+      </div>
+
+      <div class="col-md-4">
+        <strong>Acceso directo</strong>
+        <ul class="list-unstyled mt-2 mb-0">
+          <li><a class="link-light" href="{% url 'inicio' %}">Inicio</a></li>
+          <li><a class="link-light" href="{% url 'catalogo' %}">Catálogo</a></li>
+          <li><a class="link-light" href="{% url 'quienes_somos' %}">Quiénes somos</a></li>
+          <li><a class="link-light" href="{% url 'resenas' %}">Reseñas</a></li>
+          {% if user.is_authenticated %}
+            <li><a class="link-light" href="{% url 'mis_compras' %}">Mis compras</a></li>
+          {% else %}
+            <li><a class="link-light" href="{% url 'login' %}">Ingresar</a></li>
+            <li><a class="link-light" href="{% url 'registro' %}">Registrarse</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="col-md-4">
+        <strong>Trabaja con nosotros</strong>
+        <p class="mt-2 mb-2">¿Quieres ser parte de MaxStore? Envía tu currículum a
+          <a class="link-light" href="mailto:trabajo@maxstore.cl">trabajo@maxstore.cl</a></p>
+        <a class="btn btn-sm btn-outline-warning" href="{% url 'admin_login' %}">Administradores</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Carruseles: cambio cada 3 s con desvanecimiento suave
+  document.querySelectorAll('.carousel').forEach(function (el) {
+    el.classList.add('carousel-fade');
+    bootstrap.Carousel.getOrCreateInstance(el, { interval: 3000, ride: 'carousel' });
+  });
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% extends "Max_app/base.html" %}
+{% load humanize %}
+{% block title %}Carrito{% endblock %}
+{% block content %}
+<h2 class="mb-3">Mi carrito</h2>
+
+{% if items %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Juego</th><th>Consola</th><th class="text-end">Precio</th><th class="text-center">Cant.</th><th class="text-end">Subtotal</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for i in items %}
+        <tr>
+          <td>{{ i.producto.nombre }}</td>
+          <td>{{ i.producto.plataforma }}</td>
+          <td class="text-end">${{ i.producto.precio|intcomma }}</td>
+          <td class="text-center">{{ i.cantidad }}</td>
+          <td class="text-end">${{ i.subtotal|intcomma }}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'carrito_quitar' i.producto.pk %}" class="m-0">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">Quitar</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><th colspan="4" class="text-end">Total</th><th class="text-end">${{ total|intcomma }}</th><th></th></tr>
+      </tfoot>
+    </table>
+  </div>
+  <div class="card-body d-flex justify-content-between">
+    <a href="{% url 'catalogo' %}" class="btn btn-outline-secondary">Seguir comprando</a>
+    <form method="post" action="{% url 'carrito_confirmar' %}" class="m-0">
+      {% csrf_token %}
+      <button class="btn btn-success">Continuar al pago</button>
+    </form>
+  </div>
+</div>
+{% else %}
+  <div class="alert alert-info">Tu carrito está vacío. <a href="{% url 'catalogo' %}">Ver catálogo</a></div>
+{% endif %}
+{% endblock %}

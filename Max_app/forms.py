@@ -10,11 +10,6 @@ from .models import Cliente, Producto, Venta, Resena, validar_rut
 
 User = get_user_model()
 
-
-# ==========================================
-# MIXINS BASE
-# ==========================================
-
 class BootstrapMixin:
     "Aplica clases Bootstrap a todos los campos."
 
@@ -30,10 +25,6 @@ class BootstrapMixin:
                 clase = "form-control"
             w.attrs["class"] = clase
 
-
-# ==========================================
-# FORMULARIOS DE AUTENTICACIÓN (LOGIN)
-# ==========================================
 
 class LoginForm(BootstrapMixin, AuthenticationForm):
     def __init__(self, *args, **kwargs):
@@ -52,17 +43,13 @@ class AdminLoginForm(LoginForm):
 
     def confirm_login_allowed(self, user):
         super().confirm_login_allowed(user)
-        # Validamos que sea staff o superusuario para permitir el acceso
+       
         if not (user.is_staff or user.is_superuser):
             raise forms.ValidationError(
                 "Esta cuenta no tiene permisos de administrador.",
                 code="no_admin",
             )
 
-
-# ==========================================
-# FORMULARIOS DE REGISTRO
-# ==========================================
 
 class RegistroForm(BootstrapMixin, UserCreationForm):
     email = forms.EmailField(required=True)
@@ -82,7 +69,7 @@ class RegistroForm(BootstrapMixin, UserCreationForm):
         self.fields["telefono"].label = "Teléfono"
         self.fields["password1"].label = "Contraseña"
         self.fields["password1"].help_text = (
-            "Mínimo 6 caracteres. No puede ser solo números ni una contraseña demasiado común."
+            "Mínimo 10 caracteres. No puede ser solo números ni una contraseña demasiado común."
         )
         self.fields["password2"].label = "Repetir contraseña"
         self.fields["password2"].help_text = "Escriba la misma contraseña para confirmar."
@@ -121,10 +108,6 @@ class RegistroForm(BootstrapMixin, UserCreationForm):
         return user
 
 
-# ==========================================
-# FORMULARIOS DE PERFIL Y CUENTA
-# ==========================================
-
 class PerfilForm(BootstrapMixin, forms.ModelForm):
     telefono = forms.CharField(max_length=20, required=False, label="Teléfono")
 
@@ -159,9 +142,6 @@ class CambiarClaveForm(BootstrapMixin, PasswordChangeForm):
     pass
 
 
-# ==========================================
-# FORMULARIOS DE CATÁLOGO (PRODUCTOS Y RESEÑAS)
-# ==========================================
 
 class ProductoForm(BootstrapMixin, forms.ModelForm):
     class Meta:
@@ -179,10 +159,6 @@ class ResenaForm(BootstrapMixin, forms.ModelForm):
         labels = {"calificacion": "Calificación", "comentario": "Tu opinión"}
         widgets = {"comentario": forms.Textarea(attrs={"rows": 3})}
 
-
-# ==========================================
-# FORMULARIOS DE PAGO
-# ==========================================
 
 def _luhn_valido(numero):
     total = 0

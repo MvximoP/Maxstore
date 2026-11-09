@@ -6,6 +6,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Avg, Count, F, FloatField, IntegerField, Q, Sum
 from django.db.models.deletion import ProtectedError
@@ -17,7 +18,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from .forms import PagoForm, ProductoForm, RegistroForm
+from .forms import PagoForm, ProductoForm, RecuperarClaveForm, RegistroForm
 from .models import Cliente, DetalleVenta, Plataforma, Producto, Venta
 
 
@@ -247,6 +248,34 @@ def registro(request):
                   {"form": form, "titulo": "Crear cuenta", "boton": "Registrarme"})
 
 
+# ---------- RECUPERAR CONTRASEÑA (usuario + teléfono) ----------
+def recuperar_clave(request):
+    if request.user.is_authenticated:
+        return redirect("configuracion")
+
+    form = RecuperarClaveForm(request.POST or None)
+    if request.method == "POST":
+        usuario = (request.POST.get("username") or "").strip().lower()
+        clave_cache = f"recuperar:{usuario}"
+        intentos = cache.get(clave_cache, 0)
+
+        if intentos >= 5:
+            messages.error(request, "Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.")
+        elif form.is_valid():
+            user = form.user
+            user.set_password(form.cleaned_data["password1"])
+            user.save(update_fields=["password"])
+            cache.delete(clave_cache)
+            messages.success(request, "Contraseña actualizada. Ya puedes iniciar sesión.")
+            return redirect("login")
+        elif form.non_field_errors():  # los datos no coincidieron: cuenta como intento fallido
+            cache.set(clave_cache, intentos + 1, 15 * 60)
+
+    return render(request, "Max_app/form_generico.html", {
+        "form": form, "titulo": "Recuperar contraseña", "boton": "Cambiar contraseña",
+    })
+
+
 # ---------- DASHBOARD (solo personal) ----------
 @solo_staff
 def dashboard(request):
@@ -311,4 +340,3 @@ def venta_marcar_pagada(request, pk):
     if n:
         messages.success(request, f"Venta #{pk} marcada como pagada.")
     return redirect("dashboard")
-

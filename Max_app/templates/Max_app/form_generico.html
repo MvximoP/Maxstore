@@ -11,6 +11,12 @@
         <div class="mb-3">
           {% if campo.field.widget.input_type == "checkbox" %}
             <div class="form-check">{{ campo }} <label class="form-check-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label></div>
+          {% elif campo.field.widget.input_type == "password" %}
+            <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            <div class="input-group">
+              {{ campo }}
+              <button type="button" class="btn btn-outline-secondary toggle-pass" data-target="{{ campo.id_for_label }}">Ver</button>
+            </div>
           {% else %}
             <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
             {{ campo }}
@@ -22,6 +28,25 @@
       <button class="btn btn-dark">{{ boton }}</button>
       <a href="{% url 'catalogo' %}" class="btn btn-link">Cancelar</a>
     </form>
+
+    {% if titulo == "Ingresar" %}
+      <hr>
+      <p class="small mb-1"><a href="{% url 'recuperar_clave' %}">¿Olvidaste tu contraseña?</a></p>
+      <p class="small mb-0">¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a></p>
+    {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll(".toggle-pass").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var input = document.getElementById(btn.dataset.target);
+      var oculto = input.type === "password";
+      input.type = oculto ? "text" : "password";
+      btn.textContent = oculto ? "Ocultar" : "Ver";
+    });
+  });
+</script>
 {% endblock %}

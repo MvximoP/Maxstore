@@ -37,6 +37,7 @@ urlpatterns = [
 
     # --- Registro / Autenticación ---
     path("registro/", views.registro, name="registro"),
+    path("recuperar-clave/", views.recuperar_clave, name="recuperar_clave"),
     path("ingresar/", auth_views.LoginView.as_view(
         template_name="Max_app/form_generico.html",
         authentication_form=LoginForm,

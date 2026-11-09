@@ -2,7 +2,7 @@ import re
 from datetime import date
 
 from django import forms
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordChangeForm
 from django.db import transaction
 
@@ -54,7 +54,7 @@ class AdminLoginForm(LoginForm):
 class RegistroForm(BootstrapMixin, UserCreationForm):
     email = forms.EmailField(required=True)
     rut = forms.CharField(max_length=12, validators=[validar_rut], help_text="Ej: 12.345.678-5")
-    telefono = forms.CharField(max_length=20, required=False)
+    telefono = forms.CharField(max_length=20, help_text="Ej: +56 9 1234 5678")
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -94,6 +94,12 @@ class RegistroForm(BootstrapMixin, UserCreationForm):
         if Cliente.objects.filter(rut=rut).exists():
             raise forms.ValidationError("Este RUT ya está registrado.")
         return rut
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data["telefono"].strip()
+        if len(re.sub(r"\D", "", telefono)) < 8:
+            raise forms.ValidationError("Ingresa un teléfono válido (mínimo 8 dígitos).")
+        return telefono
 
     @transaction.atomic
     def save(self, commit=True):
@@ -215,4 +221,57 @@ class PagoForm(forms.Form):
 
         if not re.fullmatch(r"\d{3,4}", data.get("cvv") or ""):
             self.add_error("cvv", "El CVV debe tener 3 o 4 dígitos.")
+        return data
+
+
+# ---------- RECUPERAR CONTRASEÑA (usuario + teléfono) ----------
+def _solo_digitos(valor):
+    return re.sub(r"\D", "", valor or "")
+
+
+def _mismo_telefono(a, b):
+    """Compara teléfonos ignorando espacios, guiones, paréntesis y el +56."""
+    a, b = _solo_digitos(a), _solo_digitos(b)
+    return len(a) >= 8 and len(b) >= 8 and a[-9:] == b[-9:]
+
+
+class RecuperarClaveForm(BootstrapMixin, forms.Form):
+    """Restablece la contraseña de un usuario normal verificando usuario + teléfono."""
+    username = forms.CharField(label="Nombre de usuario", max_length=150)
+    telefono = forms.CharField(label="Teléfono", max_length=20,
+                               help_text="El teléfono con el que te registraste. Ej: +56 9 1234 5678")
+    password1 = forms.CharField(
+        label="Contraseña nueva", strip=False, widget=forms.PasswordInput,
+        help_text="Mínimo 10 caracteres. No puede ser solo números ni una contraseña demasiado común.",
+    )
+    password2 = forms.CharField(label="Repetir contraseña nueva", strip=False, widget=forms.PasswordInput)
+
+    user = None
+
+    def clean(self):
+        data = super().clean()
+        username = (data.get("username") or "").strip()
+        telefono = data.get("telefono") or ""
+        p1, p2 = data.get("password1"), data.get("password2")
+
+        # 1) Reglas de la contraseña (no dependen del usuario)
+        if p1 and p2:
+            if p1 != p2:
+                self.add_error("password2", "Las contraseñas no coinciden.")
+            else:
+                try:
+                    password_validation.validate_password(p1)
+                except forms.ValidationError as e:
+                    self.add_error("password1", e)
+        if self.errors:
+            return data
+
+        # 2) Identidad: solo usuarios normales (nunca staff ni superusuarios)
+        user = (User.objects
+                .filter(username__iexact=username, is_staff=False, is_superuser=False, is_active=True)
+                .first())
+        cliente = getattr(user, "cliente", None) if user else None
+        if not cliente or not _mismo_telefono(cliente.telefono, telefono):
+            raise forms.ValidationError("Los datos no coinciden con ningún usuario.")
+        self.user = user
         return data
